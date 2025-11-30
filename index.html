@@ -22,8 +22,34 @@
     h1 {
       text-align: center;
       font-size: 26px;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       font-weight: 700;
+    }
+
+    /* 모드 선택 탭 */
+    .mode-tabs {
+      display: flex;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 7px rgba(0,0,0,0.06);
+    }
+
+    .mode-tab {
+      flex: 1;
+      text-align: center;
+      padding: 12px 0;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #dcdde1;
+      color: #2d3436;
+      transition: 0.2s;
+    }
+
+    .mode-tab.active {
+      background: #4b7bec;
+      color: white;
     }
 
     .card {
@@ -81,7 +107,7 @@
       margin-bottom: 15px;
     }
 
-    /* 결과 블록 전체 */
+    /* 한 팀 블록 */
     .team-block {
       padding: 15px;
       border-radius: 12px;
@@ -97,7 +123,7 @@
     }
 
     .job-list {
-      font-size: 16px; /* 🔥 글자 크기 줄임 (input과 비슷하게) */
+      font-size: 16px;
       line-height: 1.6;
       padding-left: 8px;
     }
@@ -108,19 +134,25 @@
   <div class="container">
     <h1>직업 매칭 계산</h1>
 
+    <!-- 🔵 모드 선택 탭 -->
+    <div class="mode-tabs">
+      <div id="tabPlus" class="mode-tab active" onclick="setMode('plus')">직플받</div>
+      <div id="tabMinus" class="mode-tab" onclick="setMode('minus')">직빼받</div>
+    </div>
+
     <div class="card">
       <div class="input-box">
-        <span class="input-label">남자 점수</span>
+        <span class="input-label">남자</span>
         <input id="maleScore" type="number" placeholder="예: 5">
       </div>
 
       <div class="input-box">
-        <span class="input-label">여자 점수</span>
+        <span class="input-label">여자</span>
         <input id="femaleScore" type="number" placeholder="예: 6">
       </div>
 
       <div class="input-box">
-        <span class="input-label">목표 점수</span>
+        <span id="targetLabel" class="input-label">직플받</span>
         <input id="targetScore" type="number" placeholder="예: 8">
       </div>
 
@@ -134,11 +166,28 @@
   </div>
 
 <script>
+/* 현재 계산 모드 */
+let currentMode = "plus"; // 기본: 직플받
+
+function setMode(mode) {
+  currentMode = mode;
+
+  // 탭 UI 업데이트
+  document.getElementById("tabPlus").classList.toggle("active", mode === "plus");
+  document.getElementById("tabMinus").classList.toggle("active", mode === "minus");
+
+  // 라벨 변경
+  document.getElementById("targetLabel").innerText =
+    mode === "plus" ? "직플받" : "직빼받";
+}
+
+/* 마피아 팀 리스트 */
 const mafiaTeam = [
   "마피아", "짐승인간", "스파이", "마담", 
   "도둑", "마녀", "과학자", "사기꾼", "청부업자"
 ];
 
+/* 직업 데이터 */
 const jobs = [
   ["마피아", "M", 3, 0],
   ["경찰", "M", 2, 2],
@@ -196,9 +245,18 @@ function findJobs() {
     return;
   }
 
+  /* 모드별 계산 공식 */
   const matched = jobs.filter(([name, gender, letters, batchim]) => {
     const genderScore = (gender === "M") ? male : female;
-    const total = letters + batchim + genderScore;
+
+    let total = 0;
+
+    if (currentMode === "plus") {
+      total = letters + batchim + genderScore; // 직플받
+    } else {
+      total = letters - batchim + genderScore; // 직빼받
+    }
+
     return total === target;
   });
 
@@ -210,7 +268,7 @@ function findJobs() {
     return;
   }
 
-  /** 시민팀 한 블록 출력 **/
+  /* 시민팀 출력 */
   if (citizenList.length > 0) {
     const names = citizenList.map(([name]) => name).join(", ");
 
@@ -222,7 +280,7 @@ function findJobs() {
     `;
   }
 
-  /** 마피아팀 한 블록 출력 **/
+  /* 마피아팀 출력 */
   if (mafiaList.length > 0) {
     const names = mafiaList.map(([name]) => name).join(", ");
 

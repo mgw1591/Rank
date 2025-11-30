@@ -6,11 +6,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
+    :root {
+      --bg: #f5f6fa;
+      --text: #2d3436;
+      --card-bg: #ffffff;
+      --border: #dcdde1;
+
+      --primary: #4b7bec;
+      --primary-dark: #3867d6;
+
+      --citizen: #3867d6;
+      --mafia: #eb3b5a;
+    }
+
+    /* DARK MODE VARIABLES */
+    body.dark {
+      --bg: #1e272e;
+      --text: #d2dae2;
+      --card-bg: #2f3640;
+      --border: #485460;
+
+      --primary: #34ace0;
+      --primary-dark: #227093;
+
+      --citizen: #34ace0;
+      --mafia: #ff5252;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-serif;
-      background: #f5f6fa;
+      background: var(--bg);
+      color: var(--text);
       margin: 0;
       padding: 0;
+      transition: 0.25s;
     }
 
     .container {
@@ -24,6 +53,17 @@
       font-size: 26px;
       margin-bottom: 20px;
       font-weight: 700;
+      color: var(--text);
+    }
+
+    /* 다크모드 버튼 */
+    .dark-toggle {
+      text-align: right;
+      margin-bottom: 10px;
+      font-size: 22px;
+      cursor: pointer;
+      user-select: none;
+      color: var(--text);
     }
 
     /* 모드 선택 탭 */
@@ -42,22 +82,23 @@
       font-size: 18px;
       font-weight: 600;
       cursor: pointer;
-      background: #dcdde1;
-      color: #2d3436;
+      background: var(--border);
+      color: var(--text);
       transition: 0.2s;
     }
 
     .mode-tab.active {
-      background: #4b7bec;
+      background: var(--primary);
       color: white;
     }
 
     .card {
-      background: white;
+      background: var(--card-bg);
       border-radius: 16px;
       padding: 20px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.08);
       margin-bottom: 20px;
+      transition: 0.25s;
     }
 
     .input-box {
@@ -69,19 +110,23 @@
       margin-bottom: 8px;
       display: block;
       font-weight: 600;
+      color: var(--text);
     }
 
     input {
       width: 100%;
       padding: 14px;
       font-size: 18px;
-      border: 1.5px solid #dcdde1;
+      border: 1.5px solid var(--border);
       border-radius: 12px;
       outline: none;
+      background: var(--card-bg);
+      color: var(--text);
+      transition: 0.25s;
     }
 
     input:focus {
-      border-color: #4b7bec;
+      border-color: var(--primary);
     }
 
     button {
@@ -91,29 +136,32 @@
       border-radius: 12px;
       border: none;
       color: white;
-      background: #4b7bec;
+      background: var(--primary);
       font-weight: 700;
       margin-top: 10px;
       cursor: pointer;
+      transition: 0.2s;
     }
 
     button:active {
-      background: #3867d6;
+      background: var(--primary-dark);
     }
 
     .result-title {
       font-size: 22px;
       font-weight: 700;
       margin-bottom: 15px;
+      color: var(--text);
     }
 
     /* 한 팀 블록 */
     .team-block {
       padding: 15px;
       border-radius: 12px;
-      background: #fff;
+      background: var(--card-bg);
       box-shadow: 0 2px 7px rgba(0,0,0,0.06);
       margin-bottom: 20px;
+      transition: 0.25s;
     }
 
     .team-title {
@@ -132,6 +180,10 @@
 
 <body>
   <div class="container">
+
+    <!-- 🌙 다크모드 버튼 -->
+    <div class="dark-toggle" onclick="toggleDarkMode()">🌙</div>
+
     <h1>직업 매칭 계산</h1>
 
     <!-- 🔵 모드 선택 탭 -->
@@ -143,17 +195,17 @@
     <div class="card">
       <div class="input-box">
         <span class="input-label">남자</span>
-        <input id="maleScore" type="number" placeholder="예: 5">
+        <input id="maleScore" type="number">
       </div>
 
       <div class="input-box">
         <span class="input-label">여자</span>
-        <input id="femaleScore" type="number" placeholder="예: 6">
+        <input id="femaleScore" type="number">
       </div>
 
       <div class="input-box">
         <span id="targetLabel" class="input-label">직플받</span>
-        <input id="targetScore" type="number" placeholder="예: 8">
+        <input id="targetScore" type="number">
       </div>
 
       <button onclick="findJobs()">결과 보기</button>
@@ -166,66 +218,55 @@
   </div>
 
 <script>
+/* 🌙 다크모드 상태 저장 */
+if (localStorage.getItem("darkMode") === "true") {
+  document.body.classList.add("dark");
+  document.querySelector(".dark-toggle").innerText = "☀️";
+}
+
+/* 다크모드 토글 */
+function toggleDarkMode() {
+  const body = document.body;
+  const btn = document.querySelector(".dark-toggle");
+
+  body.classList.toggle("dark");
+  const isDark = body.classList.contains("dark");
+  btn.innerText = isDark ? "☀️" : "🌙";
+
+  localStorage.setItem("darkMode", isDark);
+}
+
 /* 현재 계산 모드 */
 let currentMode = "plus"; // 기본: 직플받
 
 function setMode(mode) {
   currentMode = mode;
 
-  // 탭 UI 업데이트
   document.getElementById("tabPlus").classList.toggle("active", mode === "plus");
   document.getElementById("tabMinus").classList.toggle("active", mode === "minus");
 
-  // 라벨 변경
   document.getElementById("targetLabel").innerText =
     mode === "plus" ? "직플받" : "직빼받";
 }
 
-/* 마피아 팀 리스트 */
+/* 마피아 팀 */
 const mafiaTeam = [
-  "마피아", "짐승인간", "스파이", "마담", 
+  "마피아", "짐승인간", "스파이", "마담",
   "도둑", "마녀", "과학자", "사기꾼", "청부업자"
 ];
 
 /* 직업 데이터 */
 const jobs = [
-  ["마피아", "M", 3, 0],
-  ["경찰", "M", 2, 2],
-  ["자경단원", "F", 4, 3],
-  ["의사", "M", 2, 0],
-  ["요원", "M", 2, 1],
-  ["짐승인간", "M", 4, 4],
-  ["스파이", "F", 3, 0],
-  ["마담", "F", 2, 1],
-  ["도둑", "M", 2, 1],
-  ["마녀", "F", 2, 0],
-  ["과학자", "F", 3, 1],
-  ["사기꾼", "M", 3, 1],
-  ["청부업자", "M", 4, 2],
-  ["군인", "M", 2, 2],
-  ["연인(남자)", "M", 2, 2],
-  ["연인(여자)", "F", 2, 2],
-  ["기자", "F", 2, 0],
-  ["사립탐정", "M", 4, 3],
-  ["테러리스트", "F", 5, 0],
-  ["예언자", "M", 3, 1],
-  ["정치인", "M", 3, 2],
-  ["영매", "F", 2, 1],
-  ["건달", "M", 2, 1],
-  ["도굴꾼", "M", 3, 2],
-  ["성직자", "F", 3, 2],
-  ["판사", "M", 2, 1],
-  ["간호사", "F", 3, 1],
-  ["마술사", "M", 3, 1],
-  ["해커", "M", 2, 0],
-  ["심리학자", "F", 4, 2],
-  ["용병", "M", 2, 2],
-  ["공무원", "F", 3, 2],
-  ["비밀결사(여자)", "F", 4, 2],
-  ["비밀결사(남자)", "M", 4, 2],
-  ["파파라치", "F", 4, 0],
-  ["최면술사", "F", 4, 2],
-  ["점쟁이", "F", 3, 2]
+  ["마피아","M",3,0],["경찰","M",2,2],["자경단원","F",4,3],["의사","M",2,0],
+  ["요원","M",2,1],["짐승인간","M",4,4],["스파이","F",3,0],["마담","F",2,1],
+  ["도둑","M",2,1],["마녀","F",2,0],["과학자","F",3,1],["사기꾼","M",3,1],
+  ["청부업자","M",4,2],["군인","M",2,2],["연인(남자)","M",2,2],["연인(여자)","F",2,2],
+  ["기자","F",2,0],["사립탐정","M",4,3],["테러리스트","F",5,0],["예언자","M",3,1],
+  ["정치인","M",3,2],["영매","F",2,1],["건달","M",2,1],["도굴꾼","M",3,2],
+  ["성직자","F",3,2],["판사","M",2,1],["간호사","F",3,1],["마술사","M",3,1],
+  ["해커","M",2,0],["심리학자","F",4,2],["용병","M",2,2],["공무원","F",3,2],
+  ["비밀결사(여자)","F",4,2],["비밀결사(남자)","M",4,2],["파파라치","F",4,0],
+  ["최면술사","F",4,2],["점쟁이","F",3,2]
 ];
 
 function isMafia(name) {
@@ -245,51 +286,40 @@ function findJobs() {
     return;
   }
 
-  /* 모드별 계산 공식 */
   const matched = jobs.filter(([name, gender, letters, batchim]) => {
-    const genderScore = (gender === "M") ? male : female;
-
+    const genderScore = gender === "M" ? male : female;
     let total = 0;
 
-    if (currentMode === "plus") {
-      total = letters + batchim + genderScore; // 직플받
-    } else {
-      total = letters - batchim + genderScore; // 직빼받
-    }
+    if (currentMode === "plus") total = letters + batchim + genderScore;
+    else total = letters - batchim + genderScore;
 
     return total === target;
   });
 
-  const citizenList = matched.filter(([name]) => !isMafia(name));
-  const mafiaList = matched.filter(([name]) => isMafia(name));
+  const citizen = matched.filter(([n]) => !isMafia(n));
+  const mafia = matched.filter(([n]) => isMafia(n));
 
   if (matched.length === 0) {
     resultBox.innerHTML = "<div>조건에 맞는 직업이 없습니다.</div>";
     return;
   }
 
-  /* 시민팀 출력 */
-  if (citizenList.length > 0) {
-    const names = citizenList.map(([name]) => name).join(", ");
-
+  if (citizen.length > 0) {
+    const names = citizen.map(([n]) => n).join(", ");
     resultBox.innerHTML += `
       <div class="team-block">
-        <div class="team-title" style="color:#3867d6;">시민팀</div>
-        <div class="job-list" style="color:#3867d6;">${names}</div>
-      </div>
-    `;
+        <div class="team-title" style="color:var(--citizen)">시민팀</div>
+        <div class="job-list" style="color:var(--citizen)">${names}</div>
+      </div>`;
   }
 
-  /* 마피아팀 출력 */
-  if (mafiaList.length > 0) {
-    const names = mafiaList.map(([name]) => name).join(", ");
-
+  if (mafia.length > 0) {
+    const names = mafia.map(([n]) => n).join(", ");
     resultBox.innerHTML += `
       <div class="team-block">
-        <div class="team-title" style="color:#eb3b5a;">마피아팀</div>
-        <div class="job-list" style="color:#eb3b5a;">${names}</div>
-      </div>
-    `;
+        <div class="team-title" style="color:var(--mafia)">마피아팀</div>
+        <div class="job-list" style="color:var(--mafia)">${names}</div>
+      </div>`;
   }
 }
 </script>

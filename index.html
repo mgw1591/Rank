@@ -81,23 +81,26 @@
       margin-bottom: 15px;
     }
 
-    .job-item {
+    /* 결과 블록 전체 */
+    .team-block {
       padding: 15px;
+      border-radius: 12px;
       background: #fff;
-      border-radius: 14px;
-      font-size: 18px;
-      margin-bottom: 12px;
       box-shadow: 0 2px 7px rgba(0,0,0,0.06);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: inherit; /* ← 색상 상속 */
+      margin-bottom: 20px;
     }
 
-    .job-name {
-      font-weight: 600;
+    .team-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 10px;
     }
 
+    .job-list {
+      font-size: 16px; /* 🔥 글자 크기 줄임 (input과 비슷하게) */
+      line-height: 1.6;
+      padding-left: 8px;
+    }
   </style>
 </head>
 
@@ -207,36 +210,28 @@ function findJobs() {
     return;
   }
 
-  /** 시민팀 출력 (파란색) **/
+  /** 시민팀 한 블록 출력 **/
   if (citizenList.length > 0) {
+    const names = citizenList.map(([name]) => name).join(", ");
+
     resultBox.innerHTML += `
-      <div style="margin-bottom:10px; font-size:20px; font-weight:700; color:#3867d6;">
-        시민팀
+      <div class="team-block">
+        <div class="team-title" style="color:#3867d6;">시민팀</div>
+        <div class="job-list" style="color:#3867d6;">${names}</div>
       </div>
     `;
-    citizenList.forEach(([name]) => {
-      resultBox.innerHTML += `
-        <div class="job-item" style="color:#3867d6; border-left: 5px solid #3867d6;">
-          <div class="job-name">${name}</div>
-        </div>
-      `;
-    });
   }
 
-  /** 마피아팀 출력 (빨간색) **/
+  /** 마피아팀 한 블록 출력 **/
   if (mafiaList.length > 0) {
+    const names = mafiaList.map(([name]) => name).join(", ");
+
     resultBox.innerHTML += `
-      <div style="margin-top:20px; margin-bottom:10px; font-size:20px; font-weight:700; color:#eb3b5a;">
-        마피아팀
+      <div class="team-block">
+        <div class="team-title" style="color:#eb3b5a;">마피아팀</div>
+        <div class="job-list" style="color:#eb3b5a;">${names}</div>
       </div>
     `;
-    mafiaList.forEach(([name]) => {
-      resultBox.innerHTML += `
-        <div class="job-item" style="color:#eb3b5a; border-left: 5px solid #eb3b5a;">
-          <div class="job-name">${name}</div>
-        </div>
-      `;
-    });
   }
 }
 </script>

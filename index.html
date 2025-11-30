@@ -91,16 +91,13 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      color: inherit; /* ← 색상 상속 */
     }
 
     .job-name {
       font-weight: 600;
     }
 
-    .job-gender {
-      font-size: 15px;
-      opacity: 0.6;
-    }
   </style>
 </head>
 
@@ -210,9 +207,13 @@ function findJobs() {
     return;
   }
 
-  // 시민팀 먼저 출력 (파란색)
+  /** 시민팀 출력 (파란색) **/
   if (citizenList.length > 0) {
-    resultBox.innerHTML += `<div style="margin-bottom:10px; font-size:20px; font-weight:700; color:#3867d6;">시민팀</div>`;
+    resultBox.innerHTML += `
+      <div style="margin-bottom:10px; font-size:20px; font-weight:700; color:#3867d6;">
+        시민팀
+      </div>
+    `;
     citizenList.forEach(([name]) => {
       resultBox.innerHTML += `
         <div class="job-item" style="color:#3867d6; border-left: 5px solid #3867d6;">
@@ -222,9 +223,13 @@ function findJobs() {
     });
   }
 
-  // 마피아팀 출력 (빨간색)
+  /** 마피아팀 출력 (빨간색) **/
   if (mafiaList.length > 0) {
-    resultBox.innerHTML += `<div style="margin-top:20px; margin-bottom:10px; font-size:20px; font-weight:700; color:#eb3b5a;">마피아팀</div>`;
+    resultBox.innerHTML += `
+      <div style="margin-top:20px; margin-bottom:10px; font-size:20px; font-weight:700; color:#eb3b5a;">
+        마피아팀
+      </div>
+    `;
     mafiaList.forEach(([name]) => {
       resultBox.innerHTML += `
         <div class="job-item" style="color:#eb3b5a; border-left: 5px solid #eb3b5a;">

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>직업 매칭 계산기</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-serif;
+      background: #f5f6fa;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 26px;
+      margin-bottom: 30px;
+      font-weight: 700;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+
+    .input-box {
+      margin-bottom: 20px;
+    }
+
+    .input-label {
+      font-size: 18px;
+      margin-bottom: 8px;
+      display: block;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      font-size: 18px;
+      border: 1.5px solid #dcdde1;
+      border-radius: 12px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #4b7bec;
+    }
+
+    button {
+      width: 100%;
+      padding: 16px;
+      font-size: 20px;
+      border-radius: 12px;
+      border: none;
+      color: white;
+      background: #4b7bec;
+      font-weight: 700;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    button:active {
+      background: #3867d6;
+    }
+
+    .result-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+
+    .job-item {
+      padding: 15px;
+      background: #fff;
+      border-radius: 14px;
+      font-size: 18px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 7px rgba(0,0,0,0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .job-name {
+      font-weight: 600;
+    }
+
+    .job-gender {
+      font-size: 15px;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>직업 매칭 계산</h1>
+
+    <div class="card">
+      <div class="input-box">
+        <span class="input-label">남자 점수</span>
+        <input id="maleScore" type="number" placeholder="예: 5">
+      </div>
+
+      <div class="input-box">
+        <span class="input-label">여자 점수</span>
+        <input id="femaleScore" type="number" placeholder="예: 6">
+      </div>
+
+      <div class="input-box">
+        <span class="input-label">목표 점수</span>
+        <input id="targetScore" type="number" placeholder="예: 8">
+      </div>
+
+      <button onclick="findJobs()">결과 보기</button>
+    </div>
+
+    <div class="card">
+      <div class="result-title">결과</div>
+      <div id="result"></div>
+    </div>
+  </div>
+
+<script>
+const jobs = [
+  ["마피아", "M", 3, 0],
+  ["경찰", "M", 2, 2],
+  ["자경단원", "F", 4, 3],
+  ["의사", "M", 2, 0],
+  ["요원", "M", 2, 1],
+  ["짐승인간", "M", 4, 4],
+  ["스파이", "F", 3, 0],
+  ["마담", "F", 2, 1],
+  ["도둑", "M", 2, 1],
+  ["마녀", "F", 2, 0],
+  ["과학자", "F", 3, 1],
+  ["사기꾼", "M", 3, 1],
+  ["청부업자", "M", 4, 2],
+  ["군인", "M", 2, 2],
+  ["연인(남자)", "M", 2, 2],
+  ["연인(여자)", "F", 2, 2],
+  ["기자", "F", 2, 0],
+  ["사립탐정", "M", 4, 3],
+  ["테러리스트", "F", 5, 0],
+  ["예언자", "M", 3, 1],
+  ["정치인", "M", 3, 2],
+  ["영매", "F", 2, 1],
+  ["건달", "M", 2, 1],
+  ["도굴꾼", "M", 3, 2],
+  ["성직자", "F", 3, 2],
+  ["판사", "M", 2, 1],
+  ["간호사", "F", 3, 1],
+  ["마술사", "M", 3, 1],
+  ["해커", "M", 2, 0],
+  ["심리학자", "F", 4, 2],
+  ["용병", "M", 2, 2],
+  ["공무원", "F", 3, 2],
+  ["비밀결사(여자)", "F", 4, 2],
+  ["비밀결사(남자)", "M", 4, 2],
+  ["파파라치", "F", 4, 0],
+  ["최면술사", "F", 4, 2],
+  ["점쟁이", "F", 3, 2]
+];
+
+function findJobs() {
+  const male = Number(document.getElementById("maleScore").value);
+  const female = Number(document.getElementById("femaleScore").value);
+  const target = Number(document.getElementById("targetScore").value);
+
+  const resultBox = document.getElementById("result");
+  resultBox.innerHTML = "";
+
+  if (isNaN(male) || isNaN(female) || isNaN(target)) {
+    resultBox.innerHTML = "<div>모든 값을 입력해주세요.</div>";
+    return;
+  }
+
+  const matched = jobs.filter(([name, gender, letters, batchim]) => {
+    const genderScore = (gender === "M") ? male : female;
+    const total = letters + batchim + genderScore;
+    return total === target;
+  });
+
+  if (matched.length === 0) {
+    resultBox.innerHTML = "<div>조건에 맞는 직업이 없습니다.</div>";
+    return;
+  }
+
+  matched.forEach(([name, gender]) => {
+    const g = gender === "M" ? "남자" : "여자";
+    resultBox.innerHTML += `
+      <div class="job-item">
+        <div class="job-name">${name}</div>
+        <div class="job-gender">${g}</div>
+      </div>
+    `;
+  });
+}
+</script>
+
+</body>
+</html>

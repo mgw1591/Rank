@@ -134,6 +134,11 @@
   </div>
 
 <script>
+const mafiaTeam = [
+  "마피아", "짐승인간", "스파이", "마담", 
+  "도둑", "마녀", "과학자", "사기꾼", "청부업자"
+];
+
 const jobs = [
   ["마피아", "M", 3, 0],
   ["경찰", "M", 2, 2],
@@ -174,6 +179,10 @@ const jobs = [
   ["점쟁이", "F", 3, 2]
 ];
 
+function isMafia(name) {
+  return mafiaTeam.includes(name);
+}
+
 function findJobs() {
   const male = Number(document.getElementById("maleScore").value);
   const female = Number(document.getElementById("femaleScore").value);
@@ -193,20 +202,37 @@ function findJobs() {
     return total === target;
   });
 
+  const citizenList = matched.filter(([name]) => !isMafia(name));
+  const mafiaList = matched.filter(([name]) => isMafia(name));
+
   if (matched.length === 0) {
     resultBox.innerHTML = "<div>조건에 맞는 직업이 없습니다.</div>";
     return;
   }
 
-  matched.forEach(([name, gender]) => {
-    const g = gender === "M" ? "남자" : "여자";
-    resultBox.innerHTML += `
-      <div class="job-item">
-        <div class="job-name">${name}</div>
-        <div class="job-gender">${g}</div>
-      </div>
-    `;
-  });
+  // 시민팀 먼저 출력 (파란색)
+  if (citizenList.length > 0) {
+    resultBox.innerHTML += `<div style="margin-bottom:10px; font-size:20px; font-weight:700; color:#3867d6;">시민팀</div>`;
+    citizenList.forEach(([name]) => {
+      resultBox.innerHTML += `
+        <div class="job-item" style="color:#3867d6; border-left: 5px solid #3867d6;">
+          <div class="job-name">${name}</div>
+        </div>
+      `;
+    });
+  }
+
+  // 마피아팀 출력 (빨간색)
+  if (mafiaList.length > 0) {
+    resultBox.innerHTML += `<div style="margin-top:20px; margin-bottom:10px; font-size:20px; font-weight:700; color:#eb3b5a;">마피아팀</div>`;
+    mafiaList.forEach(([name]) => {
+      resultBox.innerHTML += `
+        <div class="job-item" style="color:#eb3b5a; border-left: 5px solid #eb3b5a;">
+          <div class="job-name">${name}</div>
+        </div>
+      `;
+    });
+  }
 }
 </script>
 

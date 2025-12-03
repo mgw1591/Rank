@@ -139,10 +139,8 @@ button {
   line-height: 1.6;
 }
 
-.variable-hint {
-  font-size: 14px;
-  opacity: 0.7;
-  margin-top: 10px;
+.variable-hint table td {
+  padding: 4px 0;
 }
 </style>
 </head>
@@ -157,7 +155,7 @@ button {
 <div class="mode-tabs">
   <div id="tabPlus" class="mode-tab active" onclick="setMode('plus')">직플받</div>
   <div id="tabMinus" class="mode-tab" onclick="setMode('minus')">직빼받</div>
-  <div id="tabCustom" class="mode-tab" onclick="setMode('custom')">사용자정의</div>
+  <div id="tabCustom" class="mode-tab" onclick="setMode('custom')">결과</div>
 </div>
 
 <div class="card">
@@ -181,25 +179,31 @@ button {
   <div id="customArea" style="display:none;">
 
     <div class="input-box">
-      <span class="input-label">수식 템플릿</span>
+      <span class="input-label">계산식 템플릿</span>
       <select id="formulaTemplate" onchange="applyTemplate()">
         <option value="">템플릿 선택</option>
-        <option value="letters + batchim + genderScore">직플받</option>
-        <option value="letters - batchim + genderScore">직빼받</option>
-        <option value="(letters * batchim) + genderScore">직곱받</option>
-        <option value="letters + lineNumber">글자수+시민팀</option>
+        <option value="글자수 + 받침수 + 남녀">직플받</option>
+        <option value="글자수 - 받침수 + 남녀">직빼받</option>
+        <option value="(글자수 * 받침수) + 남녀">직곱받</option>
+        <option value="글자수 + 줄">글자수+시민팀</option>
       </select>
     </div>
 
     <div class="input-box">
-      <span class="input-label">수식 입력 (수정 가능)</span>
+      <span class="input-label">수식 입력 (직접 수정 가능)</span>
       <textarea id="customFormula"></textarea>
+
       <div class="variable-hint">
-        사용 가능 변수: letters, batchim, genderScore, lineNumber, posNumber  
-        <br>예) letters + batchim + genderScore
+        <table style="font-size:14px; width:100%; margin-top:10px;">
+          <tr><td><b>글자수</b></td><td>직업 글자수</td></tr>
+          <tr><td><b>받침수</b></td><td>받침 개수</td></tr>
+          <tr><td><b>남녀</b></td><td>입력한 성별 점수</td></tr>
+          <tr><td><b>줄</b></td><td>시민/마피아 줄 번호</td></tr>
+          <tr><td><b>칸</b></td><td>몇 번째 칸</td></tr>
+          <tr><td><b>상수</b></td><td>1, 2, 3 등 숫자</td></tr>
+        </table>
       </div>
     </div>
-
   </div>
 
   <button onclick="findJobs()">결과 보기</button>
@@ -233,12 +237,12 @@ function setMode(m) {
   document.getElementById("tabMinus").classList.toggle("active", m==="minus");
   document.getElementById("tabCustom").classList.toggle("active", m==="custom");
 
-  document.getElementById("customArea").style.display = 
+  document.getElementById("customArea").style.display =
     (m === "custom" ? "block" : "none");
 
   document.getElementById("targetLabel").innerText =
     m === "plus" ? "직플받" :
-    m === "minus" ? "직빼받" : "사용자정의";
+    m === "minus" ? "직빼받" : "결과";
 }
 
 /* 템플릿 적용 */
@@ -247,7 +251,7 @@ function applyTemplate() {
   document.getElementById("customFormula").value = t;
 }
 
-/* 직업 데이터 (완전체) */
+/* 직업 데이터 */
 const jobs = [
   ["마피아","M",3,0,1,1],["경찰","M",2,2,1,2],["자경단원","F",4,3,2,3],
   ["의사","M",2,0,5,5],["요원","M",2,1,1,4],["짐승인간","M",4,4,1,1],
@@ -264,28 +268,37 @@ const jobs = [
   ["점쟁이","F",3,2,5,2]
 ];
 
-/* 마피아 팀 */
+/* 마피아 */
 const mafiaTeam = ["마피아","짐승인간","스파이","마담","도둑","마녀","과학자","사기꾼","청부업자"];
 function isMafia(name) { return mafiaTeam.includes(name); }
 
-/* 계산 */
+/* 한글 변수 기반 계산 */
 function computeScore(job, male, female, formula) {
   const [name, gender, letters, batchim, lineNumber, posNumber] = job;
-  const genderScore = gender === "M" ? male : female;
 
-  const variables = { letters, batchim, genderScore, lineNumber, posNumber };
-  const argNames = Object.keys(variables);
-  const argValues = Object.values(variables);
+  const genderScore = (gender === "M" ? male : female);
 
-  const fn = new Function(...argNames, "return " + formula);
-  return fn(...argValues);
+  const variables = {
+    글자수: letters,
+    받침수: batchim,
+    남녀: genderScore,
+    줄: lineNumber,
+    칸: posNumber
+  };
+
+  const keys = Object.keys(variables);
+  const values = Object.values(variables);
+
+  const fn = new Function(...keys, "return " + formula);
+  return fn(...values);
 }
 
-/* 전체 로직 */
+/* 메인 계산 */
 function findJobs() {
   const male = Number(document.getElementById("maleScore").value);
   const female = Number(document.getElementById("femaleScore").value);
   const target = Number(document.getElementById("targetScore").value);
+
   const result = document.getElementById("result");
   result.innerHTML = "";
 
@@ -296,9 +309,9 @@ function findJobs() {
 
   let formula = "";
   if (currentMode === "plus")
-    formula = "letters + batchim + genderScore";
+    formula = "글자수 + 받침수 + 남녀";
   else if (currentMode === "minus")
-    formula = "letters - batchim + genderScore";
+    formula = "글자수 - 받침수 + 남녀";
   else
     formula = document.getElementById("customFormula").value;
 
